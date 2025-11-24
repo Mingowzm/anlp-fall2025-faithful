@@ -199,7 +199,9 @@ def fine_tuning(model, tokenizer, tokenized_datasets, data_collator):
     
     return model
 
+
 # ---------- Manual training loop (lora) ----------
+
 def lora(model, tokenzier, tokenized_datasets, data_collator):
     # --- LoRA config ---
     lora_config = LoraConfig(
@@ -248,7 +250,9 @@ def lora(model, tokenzier, tokenized_datasets, data_collator):
     
     return model
 
+
 # ---------- Evaluation: BLEU + SARI (with tqdm) ----------
+
 def evaluate(model, tokenizer, raw_datasets, tokenized_datasets):
     print("Evaluating on test set (BLEU + SARI)...")
     test_dataset_tok = tokenized_datasets["test"]
@@ -308,7 +312,9 @@ def evaluate(model, tokenizer, raw_datasets, tokenized_datasets):
 
     return bleu, sari, outputs
 
+
 # ---------- Save result ----------
+
 def save_result(model, tokenizer, bleu, sari, outputs, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     test_src = outputs["test_src"]
@@ -338,6 +344,7 @@ def save_result(model, tokenizer, bleu, sari, outputs, output_dir):
 
 
 # ---------- Main ----------
+
 if __name__ == "__main__":
     # Prompt for train type
     print("0: no training (by default)")
@@ -373,7 +380,6 @@ if __name__ == "__main__":
         remove_columns=["source", "target"],
     )
     print(tokenized_datasets)
-
 
     # Train model for type
     if TRAIN_TYPE == "none":
