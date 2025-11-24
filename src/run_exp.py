@@ -428,9 +428,17 @@ if __name__ == "__main__":
     )
 
     base_tag = "proxy" if args.use_proxy_loss else "baseline"
-    parts = [args.model_name.replace("-", "_"), args.train_type.replace("-", "_"), base_tag]
+    parts = [args.model_name.replace("-", "_"),
+             args.train_type.replace("-", "_"),
+             base_tag]
+
+    if args.use_proxy_loss:
+        lam_str = f"lam{args.lambda1:g}".replace(".", "p")  # e.g., 0.5 -> lam0p5
+        parts.append(lam_str)
+
     if args.run_tag:
         parts.append(args.run_tag)
 
     output_dir = os.path.join(args.output_root, "_".join(parts))
     save_result(model, tokenizer, bleu, sari, outputs, output_dir)
+
