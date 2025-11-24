@@ -4,6 +4,7 @@ from typing import List
 
 import torch
 from torch.utils.data import DataLoader
+from torch.cuda.amp import autocast
 
 from datasets import Dataset, DatasetDict
 from transformers import (
@@ -500,9 +501,10 @@ if __name__ == "__main__":
     sbert = SentenceTransformer("all-MiniLM-L6-v2").to(device)
     sbert.eval()
 
-    print("Loading model: roberta-large-mnli")
-    nli_tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base-mnli")
-    nli_model = AutoModelForSequenceClassification.from_pretrained("roberta-large-mnli").to(device)
+    nli_name = "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+    print(f"Loading model: {nli_name}")
+    nli_tokenizer = AutoTokenizer.from_pretrained(nli_name)
+    nli_model = AutoModelForSequenceClassification.from_pretrained(nli_name).to(device)
     nli_model.eval()
 
     # Process dataset
