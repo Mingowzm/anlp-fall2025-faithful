@@ -178,12 +178,24 @@ def decode_from_logits(logits, tokenizer):
     return texts
 
 
+# ---------- Decode safely ----------
+
+def safe_decode(text, max_len=128):
+    tokens = text.split()
+    if len(tokens) > max_len:
+        tokens = tokens[:max_len]
+    return " ".join(tokens)
+
+
 # ---------- Calculate semantic loss ----------
 
 def semantic_loss(pred_texts, tgt_texts, sbert):
     # pred_texts: list[str]
     # tgt_texts: list[str]
 
+    pred_texts = [safe_decode(t) for t in pred_texts]
+    tgt_texts  = [safe_decode(t) for t in tgt_texts]
+    
     emb_pred = sbert.encode(pred_texts, convert_to_tensor=True)
     emb_tgt = sbert.encode(tgt_texts, convert_to_tensor=True)
 
@@ -197,6 +209,9 @@ def semantic_loss(pred_texts, tgt_texts, sbert):
 # ---------- Calculate entailment loss ----------
 
 def entailment_loss(pred_texts, tgt_texts, nli_tokenizer, nli_model):
+    pred_texts = [safe_decode(t) for t in pred_texts]
+    tgt_texts  = [safe_decode(t) for t in tgt_texts]
+    
     pairs = list(zip(tgt_texts, pred_texts))  # premise = gold, hypothesis = pred
 
     inputs = nli_tokenizer(
@@ -205,11 +220,13 @@ def entailment_loss(pred_texts, tgt_texts, nli_tokenizer, nli_model):
         return_tensors="pt",
         padding=True,
         truncation=True,
+        max_length=128,  # truncate by maximum length for higher speed
     ).to(nli_model.device)
 
     with torch.no_grad():
-        logits = nli_model(**inputs).logits
-        probs = logits.softmax(dim=-1)
+        with autocast():  # use fp16
+            logits = nli_model(**inputs).logits
+            probs = logits.softmax(dim=-1)
 
     entail_prob = probs[:, 2]   # index for "entailment"
 
@@ -484,7 +501,7 @@ if __name__ == "__main__":
     sbert.eval()
 
     print("Loading model: roberta-large-mnli")
-    nli_tokenizer = AutoTokenizer.from_pretrained("roberta-large-mnli")
+    nli_tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base-mnli")
     nli_model = AutoModelForSequenceClassification.from_pretrained("roberta-large-mnli").to(device)
     nli_model.eval()
 
