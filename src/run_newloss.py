@@ -31,8 +31,8 @@ TRAIN_BATCH_SIZE = 32
 EVAL_BATCH_SIZE = 32
 LR = 5e-5
 
-LAMBDA_1 = 0.5
-LAMBDA_2 = 0.5
+LAMBDA_1 = 0.1
+LAMBDA_2 = 0.1
 
 MAX_TRAIN_SAMPLES = None
 TRAIN_TYPE = "none"  # fine-tuning/lora/none
@@ -532,6 +532,7 @@ if __name__ == "__main__":
     bleu, sari, outputs = evaluate(model, tokenizer, raw_datasets, tokenized_datasets)
 
     # Save model results
-    output_names = [MODEL_NAME, TRAIN_TYPE, "newloss"]
+    lam_str = f"lam{LAMBDA_1:g}".replace(".", "p")  # e.g., 0.1 -> lam0p1
+    output_names = [MODEL_NAME, TRAIN_TYPE, "newloss", lam_str]
     output_dir = "../results/" + "_".join(output_names).replace("-", "_")
     save_result(model, tokenizer, bleu, sari, outputs, output_dir)
